@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title> Teste de JS </title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <style>
+        html {
+            font-family: Roboto Condensed, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form id="formDados" name="formDados" action="" method="post">
+        <p><label>Nome:</label><br><input type="text" id="tx_nome" name="tx_nome" /></p>
+
+        <p><label>telefone:</label><br><input type="text" id="tx_telefone" name="tx_telefone" /></p>
+
+        <p><label>e-mail:</label><br><input type="text" id="tx_email" name="tx_email" /></p>
+
+        <h1> Arquivos </h1>
+
+        <ul id="listFiles"> </ul>
+
+        <input type="file" name="files" id="files" value="" />
+        <p>
+            <button type="submit" name="Enviar" id="Enviar">Enviar</button>
+        </p>
+
+    </form>
+
+</body>
+
+</html>
+<script>
+    $(document).ready(function() {
+        var listFiles = [];
+        $("#files").change(function(e) {
+            var name = e.target.files[0].name;
+            var type = e.target.files[0].type;
+
+            var reader = new FileReader;
+            reader.onload = function() {
+                listFiles.push({
+                    name: name,
+                    type: type,
+                    base64: reader.result
+                });
+                //console.log(listFiles);
+                $("#listFiles").html('');
+                listFiles.forEach(function(e, i) {
+                    $("#listFiles").append('<li type="1"><img src="' + e.base64 + '" width="50px"/> ' + e.name + ' <a href="' + i + '" class="delFiles">delete</a></li>');
+                });
+                $("#files").val('');
+            };
+            reader.readAsDataURL(e.target.files[0]);
+
+        });
+
+        $(this).on('click', '.delFiles', function() {
+            listFiles.splice($(this).attr('href'), 1);
+            $("#listFiles").html('');
+            listFiles.forEach(function(e, i) {
+                $("#listFiles").append('<li type="1"><img src="' + e.base64 + '" width="50px"/> ' + e.name + ' <a href="' + i + '" class="delFiles">delete</a></li>');
+            });
+            return false;
+        });
+
+        /**
+         * Submit Form com imagens
+         **/
+        $('#formDados').submit(function() {
+            var myform = document.getElementById("formDados");
+            var formData = new FormData(myform);
+
+            formData.append('tx_imagens', JSON.stringify(listFiles));
+
+            $.ajax({
+                url: 'recebe_dados.php',
+                type: "POST",
+                data: formData,
+                processData: false,
+                cache: false,
+                contentType: false,
+                success: function(data) {
+                    console.log(data);
+                },
+                error: function(request, status, error) {
+                    alert(request.responseText);
+                }
+            });
+            return false;
+        });
+
+    });
+</script>
